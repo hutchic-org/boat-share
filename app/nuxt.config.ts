@@ -1,7 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@vite-pwa/nuxt"],
+  modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin"],
+  googleSignIn: {
+    clientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
+  },
   pwa: {
     manifest: {
       name: 'Boat Sharing',
@@ -39,6 +42,14 @@ export default defineNuxtConfig({
     },
     client: {
       installPrompt: true
+    }
+  },
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+      }
     }
   }
 })
