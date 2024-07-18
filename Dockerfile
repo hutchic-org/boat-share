@@ -1,4 +1,11 @@
+# Use Node.js 22 image
 FROM node:22-bullseye@sha256:549b964736c2d5c02112fd369037e981f8b935083d6fdf1a924b831930946b6c
+
+# Set build-time arguments
+ARG NODE_ENV=development
+
+# Set environment variables
+ENV NODE_ENV=${NODE_ENV}
 
 # Set working directory
 WORKDIR /src
@@ -10,11 +17,8 @@ RUN npm install
 # Copy project files
 COPY app/ .
 
-# Build the project
-RUN npm run build
-
 # Expose port 3000
 EXPOSE 3000
 
-# Start the application
+# Default command for development
 CMD ["npm", "run", "dev"]
