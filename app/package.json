@@ -12,6 +12,7 @@
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@nuxt/ui": "^2.17.0",
+    "@vite-pwa/nuxt": "^0.9.1",
     "nuxt": "^3.12.3"
   }
 }

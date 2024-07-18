@@ -8,6 +8,16 @@ build:
 dev:
 	docker compose up -d
 
+stop:
+	docker compose stop
+
+restart:
+	docker compose restart
+
+# Exec into the development environment
+exec:
+	docker compose exec nuxt /bin/bash
+
 # View logs for the development environment
 logs:
 	docker compose logs -f
