@@ -18,13 +18,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label :for="`start-engine-hours-${date}`" class="block mb-2">Starting Engine Hours:</label>
-                        <UInput type="number" :id="`start-engine-hours-${date}`" v-model="logbookEntry.startEngineHours"
-                            :min="0" />
+                        <UInput type="number" :id="`start-engine-hours-${date}`" v-model="logbookEntry.startEngineHours" :min="0" />
                     </div>
                     <div>
                         <label :for="`end-engine-hours-${date}`" class="block mb-2">Ending Engine Hours:</label>
-                        <UInput type="number" :id="`end-engine-hours-${date}`" v-model="logbookEntry.endEngineHours"
-                            :min="0" />
+                        <UInput type="number" :id="`end-engine-hours-${date}`" v-model="logbookEntry.endEngineHours" :min="0" />
                     </div>
                 </div>
             </UFormGroup>
@@ -35,8 +33,7 @@
                 <label :for="`comments-${date}`" class="block mb-2">Comments:</label>
                 <UTextarea :id="`comments-${date}`" v-model="logbookEntry.comments" />
             </UFormGroup>
-            <UButton type="submit" label="Save Logbook" icon="i-heroicons-save" color="primary" variant="solid"
-                size="lg" block />
+            <UButton type="submit" label="Save Logbook" icon="i-heroicons-save" color="primary" variant="solid" size="lg" block />
         </UForm>
     </UCard>
 </template>
@@ -56,7 +53,8 @@ interface LogBookEntry {
     comments: string;
 }
 
-const props = defineProps<{ date: string }>();
+const props = defineProps<{ date: string, event: any }>();
+const emit = defineEmits(['logbookSaved']);
 
 const logbookEntry = ref<LogBookEntry>({
     date: props.date,
@@ -78,8 +76,43 @@ const formatDate = (dateString: string) => {
     return format(date, 'PPP');
 };
 
-const saveLogbook = () => {
-    console.log('Logbook entry saved:', logbookEntry.value);
-    // Logic to save the logbook entry can be added here
+const saveLogbook = async () => {
+    const logData = {
+        startFuel: logbookEntry.value.startFuel,
+        endFuel: logbookEntry.value.endFuel,
+        startEngineHours: logbookEntry.value.startEngineHours,
+        endEngineHours: logbookEntry.value.endEngineHours,
+        addFuel: logbookEntry.value.addFuel,
+        comments: logbookEntry.value.comments,
+    };
+
+    try {
+        const accessToken = sessionStorage.getItem('googleAccessToken');
+        const config = useRuntimeConfig();
+
+        // Update the event with the logbook entry JSON in the description
+        const updatedEvent = {
+            ...props.event,
+            description: JSON.stringify(logData),
+        };
+
+        const updateResponse = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${config.public.googleCalendarId}/events/${props.event.id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(updatedEvent),
+        });
+
+        if (!updateResponse.ok) {
+            throw new Error('Failed to update calendar event');
+        }
+
+        emit('logbookSaved', props.date);
+        console.log('Logbook entry saved:', logbookEntry.value);
+    } catch (error) {
+        console.error('Error saving logbook entry', error);
+    }
 };
 </script>

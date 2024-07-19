@@ -3,7 +3,8 @@
     <UCard class="mt-10">
       <UAccordion :items="accordionItems" multiple size="lg">
         <template #item="{ item }">
-          <component :is="item.component" :date="item.date" :email="item.email" @dayBooked="handleDayBooked" />
+          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event"
+            @dayBooked="handleDayBooked" />
         </template>
       </UAccordion>
     </UCard>
@@ -24,6 +25,8 @@ interface CalendarEvent {
   start: { date: string };
   end: { date: string };
   creator: { email: string };
+  id: string;
+  description: string;
 }
 
 interface CalendarDay {
@@ -120,19 +123,22 @@ const generateCalendarDays = () => {
     const startDate = new Date(event.start.date);
     const endDate = new Date(event.end.date);
 
+    // Adjust for single-day events that end on the same day they start
     if (startDate.getTime() === endDate.getTime()) {
       endDate.setDate(endDate.getDate() + 1);
     }
 
+    // Ensure the event spans the correct date range, adding one day
     for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
       const adjustedDate = new Date(d);
-      adjustedDate.setDate(adjustedDate.getDate() + 1);
+      adjustedDate.setDate(adjustedDate.getDate() + 1); // Adding one day
       const dayIndex = adjustedDate.getDate() - 1;
       if (calendarDays.value[dayIndex]) {
         calendarDays.value[dayIndex].isBooked = true;
         calendarDays.value[dayIndex].isUserBooking = event.creator.email === userEmail.value;
         calendarDays.value[dayIndex].email = event.creator.email;
         calendarDays.value[dayIndex].tooltipText = `Booked by: ${event.creator.email}`;
+        calendarDays.value[dayIndex].event = event; // Store the event object
       }
     }
   });
@@ -193,7 +199,6 @@ const createAccordionItems = () => {
   });
 };
 
-
 const isPastDay = (date: string) => {
   const today = new Date().toISOString().split('T')[0];
   return date < today;
@@ -219,7 +224,3 @@ onMounted(async () => {
   await listCalendarEvents();
 });
 </script>
-
-<style scoped>
-/* Add any necessary styles here */
-</style>
