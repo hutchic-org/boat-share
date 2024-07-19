@@ -8,9 +8,9 @@ export default defineNuxtConfig({
   },
   pwa: {
     manifest: {
-      name: 'Boat Sharing',
+      name: 'Boat Sharing App',
       short_name: 'Boat',
-      description: 'An app for sharing a boat among a pre-defined set of users.',
+      description: 'An app for sharing a boat among a pre-defined set of users via a Google Calendar backend.',
       lang: 'en',
       display: 'standalone',
       scope: '/boat-share/',
@@ -19,24 +19,24 @@ export default defineNuxtConfig({
       theme_color: '#4DBA87',
       icons: [
         {
-          src: '/icons/50.png',
+          src: '/boat-share/icons/50.png',
           sizes: '50x50',
           type: 'image/png'
         },
         {
-          src: '/icons/192.png',
+          src: '/boat-share/icons/192.png',
           sizes: '192x192',
           type: 'image/png'
         },
         {
-          src: '/icons/512.png',
+          src: '/boat-share/icons/512.png',
           sizes: '512x512',
           type: 'image/png'
         },
       ]
     },
     workbox: {
-      navigateFallback: '/'
+      navigateFallback: '/boat-share/'
     },
     client: {
       installPrompt: true
