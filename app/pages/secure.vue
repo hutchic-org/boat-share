@@ -1,15 +1,25 @@
 <template>
   <UContainer>
     <UCard class="mt-10">
-      <UAccordion :items="accordionItems" color="primary" variant="soft" size="sm" multiple />
+      <div v-if="loading">
+        <p>Loading calendar events...</p>
+      </div>
+      <div v-else>
+        <UAccordion :items="accordionItems" multiple size="lg">
+          <template #item="{ item }">
+            <div v-html="item.content"></div>
+          </template>
+        </UAccordion>
+      </div>
     </UCard>
   </UContainer>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
-import { format } from 'date-fns';
+import { format, isBefore, isToday } from 'date-fns';
 
 interface CalendarEvent {
   start: { date: string };
@@ -21,14 +31,17 @@ interface CalendarDay {
   date: string;
   isBooked: boolean;
   isUserBooking: boolean;
-  tooltipText: string;
+  email: string;
 }
 
 interface AccordionItem {
   label: string;
-  content: string;
   icon: string;
-  slot: string;
+  iconClass: string;
+  content: string;
+  color: string;
+  variant: string;
+  disabled: boolean;
 }
 
 const loading = ref(true);
@@ -112,42 +125,49 @@ const generateCalendarDays = () => {
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
   calendarDays.value = Array.from({ length: daysInMonth }, (_, i) => {
     const date = new Date(today.getFullYear(), today.getMonth(), i + 1).toISOString().split('T')[0];
-    return { date, isBooked: false, isUserBooking: false, tooltipText: '' };
+    return { date, isBooked: false, isUserBooking: false, email: '' };
   });
 
   events.value.forEach(event => {
-    const startDate = new Date(event.start.date);
-    const endDate = new Date(event.end.date);
+    const startDate = new Date(event.start.date + 'T00:00:00'); // Ensure time part is set to avoid timezone issues
+    const endDate = new Date(event.end.date + 'T00:00:00');
     for (let d = startDate; d < endDate; d.setDate(d.getDate() + 1)) {
       const dateStr = d.toISOString().split('T')[0];
       const day = calendarDays.value.find(day => day.date === dateStr);
       if (day) {
         day.isBooked = true;
         day.isUserBooking = event.creator.email === userEmail.value;
-        day.tooltipText = `Booked by: ${event.creator.email}`;
+        day.email = event.creator.email;
       }
     }
   });
 };
 
 const createAccordionItems = () => {
-  accordionItems.value = calendarDays.value.map((day) => ({
-    label: formatDate(day.date),
-    content: day.isBooked
-      ? `<div>
-           <p>${day.tooltipText}</p>
-           <UIcon name="${day.isUserBooking ? 'i-heroicons-user-circle' : 'i-heroicons-x-circle'}" dynamic class="${day.isUserBooking ? 'icon-user-booked' : 'icon-booked'}" />
-         </div>`
-      : '<UIcon name="i-heroicons-check-circle" dynamic class="icon-available" />',
-    icon: day.isBooked
-      ? (day.isUserBooking ? 'i-heroicons-user-circle' : 'i-heroicons-x-circle')
-      : 'i-heroicons-check-circle',
-    slot: 'item'
-  }));
+  const today = new Date();
+  accordionItems.value = calendarDays.value.map(day => {
+    const dayDate = new Date(day.date + 'T00:00:00');
+    const isPast = isBefore(dayDate, today) && !isToday(dayDate);
+    const color = isPast ? 'gray' : day.isBooked ? (day.isUserBooking ? 'blue' : 'red') : 'green';
+    const variant = isPast ? 'ghost' : 'solid';
+    const disabled = isPast && !day.isBooked;
+
+    return {
+      label: formatDate(day.date),
+      icon: day.isBooked ? (day.isUserBooking ? 'i-heroicons-user-circle' : 'i-heroicons-x-circle') : 'i-heroicons-check-circle',
+      iconClass: day.isBooked ? (day.isUserBooking ? 'text-blue-600' : 'text-red-600') : 'text-green-600',
+      content: day.isBooked
+        ? (day.isUserBooking ? `<p>Booked by you</p>` : `<p>Booked by: ${day.email}</p>`)
+        : `<p>Available</p>`,
+      color,
+      variant,
+      disabled
+    };
+  });
 };
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'T00:00:00');
   return format(date, 'EEE, MMM d');
 };
 
@@ -158,15 +178,15 @@ onMounted(async () => {
 </script>
 
 <style>
-.icon-booked {
-  color: red;
+.text-blue-600 {
+  color: #2563EB;
 }
 
-.icon-user-booked {
-  color: blue;
+.text-red-600 {
+  color: #DC2626;
 }
 
-.icon-available {
-  color: green;
+.text-green-600 {
+  color: #16A34A;
 }
 </style>
