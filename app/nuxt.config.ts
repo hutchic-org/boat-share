@@ -36,7 +36,7 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      navigateFallback: '/boat-share/'
+      navigateFallback: 'https://hutchic-org.github.io/boat-share/'
     },
     client: {
       installPrompt: true
