@@ -8,7 +8,6 @@
 
 <script setup lang="ts">
 import { useTokenClient, type AuthCodeFlowSuccessResponse, type AuthCodeFlowErrorResponse } from 'vue3-google-signin';
-import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
