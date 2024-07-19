@@ -1,5 +1,5 @@
 # Use Node.js 22 image
-FROM node:22-bullseye@sha256:f90f0e88734a0c0e36f57b77e7109cbcd628a407556e3a639ab60166ed63ae0d
+FROM node:22-bullseye@sha256:549b964736c2d5c02112fd369037e981f8b935083d6fdf1a924b831930946b6c
 
 # Set build-time arguments
 ARG USER_ID
@@ -14,7 +14,7 @@ WORKDIR /src
 
 # Install dependencies
 COPY app/package.json app/package-lock.json ./
-RUN npm install --production=false
+RUN npm install
 
 # Copy project files
 COPY app/ .
