@@ -31,9 +31,6 @@
   </template>
 
   <script setup lang="ts">
-  import { ref, onMounted, Ref } from 'vue';
-  import { useRuntimeConfig } from '#app';
-
   interface CalendarEvent {
     start: { date: string };
     end: { date: string };
