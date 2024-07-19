@@ -31,13 +31,26 @@
   </template>
 
   <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, Ref } from 'vue';
   import { useRuntimeConfig } from '#app';
 
-  const loading = ref(true);
-  const events = ref([]);
-  const calendarDays = ref([]);
-  const userEmail = ref('');
+  interface CalendarEvent {
+    start: { date: string };
+    end: { date: string };
+    creator: { email: string };
+  }
+
+  interface CalendarDay {
+    date: string;
+    isBooked: boolean;
+    isUserBooking: boolean;
+    tooltipText: string;
+  }
+
+  const loading: Ref<boolean> = ref(true);
+  const events: Ref<CalendarEvent[]> = ref([]);
+  const calendarDays: Ref<CalendarDay[]> = ref([]);
+  const userEmail: Ref<string> = ref('');
 
   const config = useRuntimeConfig();
 
@@ -62,7 +75,6 @@
       const data = await response.json();
       events.value = data.items;
       generateCalendarDays();
-      console.log('Calendar Events:', data.items);
     } catch (error) {
       console.error('Error fetching calendar events', error);
     } finally {
@@ -90,7 +102,6 @@
 
       const data = await response.json();
       userEmail.value = data.email;
-      console.log('User Email:', userEmail.value);
     } catch (error) {
       console.error('Error fetching user profile', error);
     }
@@ -101,7 +112,7 @@
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     calendarDays.value = Array.from({ length: daysInMonth }, (_, i) => {
       const date = new Date(today.getFullYear(), today.getMonth(), i + 1).toISOString().split('T')[0];
-      return { date: i + 1, isBooked: false, isUserBooking: false, tooltipText: '' };
+      return { date, isBooked: false, isUserBooking: false, tooltipText: '' };
     });
 
     events.value.forEach(event => {
@@ -120,7 +131,7 @@
 
   onMounted(async () => {
     await fetchUserProfile();
-    listCalendarEvents();
+    await listCalendarEvents();
   });
   </script>
 
