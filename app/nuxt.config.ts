@@ -49,7 +49,10 @@ export default defineNuxtConfig({
       hmr: {
         protocol: 'ws',
         host: 'localhost',
+        port: 3000,
+        clientPort: 3000
       }
     }
-  }
+  },
+  compatibilityDate: '2024-07-03',
 })
