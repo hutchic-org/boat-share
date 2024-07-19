@@ -1,36 +1,22 @@
 <template>
   <UContainer>
     <UCard class="mt-10">
-      <div v-if="loading">
-        <p>Loading calendar events...</p>
-      </div>
-      <div v-else>
-        <UAccordion :items="accordionItems" multiple size="lg">
-          <template #item="{ item }">
-            <div v-if="item.isBookedByUser">
-              <BookedByUserCell :date="item.date" />
-            </div>
-            <div v-else-if="item.isBookedByOthers">
-              <BookedByOthersCell :email="item.email" />
-            </div>
-            <div v-else>
-              <AvailableCell />
-            </div>
-          </template>
-        </UAccordion>
-      </div>
+      <UAccordion :items="accordionItems" multiple size="lg">
+        <template #item="{ item }">
+          <component :is="item.component" :date="item.date" :email="item.email" @dayBooked="handleDayBooked" />
+        </template>
+      </UAccordion>
     </UCard>
   </UContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, shallowRef, markRaw } from 'vue';
 import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
-import { format, isBefore, isToday } from 'date-fns';
-
-import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
+import { isBefore, isToday } from 'date-fns';
 import BookedByUserCell from '~/components/BookedByUserCell.vue';
+import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
 import AvailableCell from '~/components/AvailableCell.vue';
 
 interface CalendarEvent {
@@ -43,26 +29,13 @@ interface CalendarDay {
   date: string;
   isBooked: boolean;
   isUserBooking: boolean;
-  email: string;
-}
-
-interface AccordionItem {
-  label: string;
-  icon: string;
-  iconClass: string;
-  color: string;
-  variant: string;
-  disabled: boolean;
-  isBookedByUser: boolean;
-  isBookedByOthers: boolean;
   email?: string;
-  date: string;
+  tooltipText: string;
 }
 
 const loading = ref(true);
 const events = ref<CalendarEvent[]>([]);
 const calendarDays = ref<CalendarDay[]>([]);
-const accordionItems = ref<AccordionItem[]>([]);
 const userEmail = ref<string>('');
 const router = useRouter();
 const config = useRuntimeConfig();
@@ -95,7 +68,6 @@ const listCalendarEvents = async () => {
     const data = await response.json();
     events.value = data.items;
     generateCalendarDays();
-    createAccordionItems();
   } catch (error) {
     console.error('Error fetching calendar events', error);
   } finally {
@@ -140,51 +112,69 @@ const generateCalendarDays = () => {
   const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
   calendarDays.value = Array.from({ length: daysInMonth }, (_, i) => {
     const date = new Date(today.getFullYear(), today.getMonth(), i + 1).toISOString().split('T')[0];
-    return { date, isBooked: false, isUserBooking: false, email: '' };
+    return { date, isBooked: false, isUserBooking: false, tooltipText: '' };
   });
 
   events.value.forEach(event => {
-    const startDate = new Date(event.start.date + 'T00:00:00'); // Ensure time part is set to avoid timezone issues
-    const endDate = new Date(event.end.date + 'T00:00:00');
-    for (let d = startDate; d < endDate; d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      const day = calendarDays.value.find(day => day.date === dateStr);
-      if (day) {
-        day.isBooked = true;
-        day.isUserBooking = event.creator.email === userEmail.value;
-        day.email = event.creator.email;
+    const startDate = new Date(event.start.date);
+    const endDate = new Date(event.end.date);
+    // Ensure the event spans the correct date range, adding one day
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const adjustedDate = new Date(d);
+      adjustedDate.setDate(adjustedDate.getDate() + 1); // Adding one day
+      const dayIndex = adjustedDate.getDate() - 1;
+      if (calendarDays.value[dayIndex]) {
+        calendarDays.value[dayIndex].isBooked = true;
+        calendarDays.value[dayIndex].isUserBooking = event.creator.email === userEmail.value;
+        calendarDays.value[dayIndex].email = event.creator.email;
+        calendarDays.value[dayIndex].tooltipText = `Booked by: ${event.creator.email}`;
       }
     }
   });
+
+  createAccordionItems();
 };
 
-const createAccordionItems = () => {
-  const today = new Date();
-  accordionItems.value = calendarDays.value.map(day => {
-    const dayDate = new Date(day.date + 'T00:00:00');
-    const isPast = isBefore(dayDate, today) && !isToday(dayDate);
-    const color = isPast ? 'gray' : day.isBooked ? (day.isUserBooking ? 'blue' : 'red') : 'green';
-    const variant = isPast ? 'ghost' : 'solid';
-    const disabled = isPast && !day.isBooked;
+const accordionItems = shallowRef([]);
 
-    return {
-      label: formatDate(day.date),
-      icon: day.isBooked ? (day.isUserBooking ? 'i-heroicons-user-circle' : 'i-heroicons-x-circle') : 'i-heroicons-check-circle',
-      iconClass: day.isBooked ? (day.isUserBooking ? 'text-blue-600' : 'text-red-600') : 'text-green-600',
-      color,
-      variant,
-      disabled,
-      isBookedByUser: day.isBooked && day.isUserBooking,
-      isBookedByOthers: day.isBooked && !day.isUserBooking,
-      email: day.email,
-      date: day.date
-    };
-  });
+const createAccordionItems = () => {
+  accordionItems.value = calendarDays.value.map(day => ({
+    label: formatDate(day.date),
+    date: day.date,
+    email: day.isBooked && !day.isUserBooking ? day.email : undefined,
+    component: markRaw(day.isBooked
+      ? day.isUserBooking
+        ? BookedByUserCell
+        : BookedByOthersCell
+      : AvailableCell),
+    icon: day.isBooked
+      ? day.isUserBooking
+        ? 'i-heroicons-user-circle'
+        : 'i-heroicons-x-circle'
+      : 'i-heroicons-check-circle',
+    variant: isPastDay(day.date) ? 'ghost' : undefined,
+    disabled: isPastDay(day.date) && !day.isBooked,
+  }));
+};
+
+const isPastDay = (date: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  return date < today;
 };
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString + 'T00:00:00');
-  return format(date, 'EEE, MMM d');
+  return date.toDateString();
+};
+
+const handleDayBooked = (bookedDate: string) => {
+  const day = calendarDays.value.find(day => day.date === bookedDate);
+  if (day) {
+    day.isBooked = true;
+    day.isUserBooking = true;
+    day.tooltipText = `Booked by: ${userEmail.value}`;
+    createAccordionItems();  // Ensure the accordion items are updated
+  }
 };
 
 onMounted(async () => {
@@ -192,17 +182,3 @@ onMounted(async () => {
   await listCalendarEvents();
 });
 </script>
-
-<style>
-.text-blue-600 {
-  color: #2563EB;
-}
-
-.text-red-600 {
-  color: #DC2626;
-}
-
-.text-green-600 {
-  color: #16A34A;
-}
-</style>
