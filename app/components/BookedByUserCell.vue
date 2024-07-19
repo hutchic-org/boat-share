@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { format } from 'date-fns';
 import FuelSlider from './FuelSlider.vue'; // Importing the custom FuelSlider component
 
@@ -74,6 +74,53 @@ const fuelOptions = [
 const formatDate = (dateString: string) => {
     const date = new Date(dateString + 'T00:00:00');
     return format(date, 'PPP');
+};
+
+const isJSON = (str) => {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
+
+const loadLogbookEntry = () => {
+    // Initialize default values
+    logbookEntry.value.startFuel = 0;
+    logbookEntry.value.endFuel = 0;
+    logbookEntry.value.startEngineHours = 0;
+    logbookEntry.value.endEngineHours = 0;
+    logbookEntry.value.addFuel = '';
+    logbookEntry.value.comments = '';
+
+    // Attempt to parse and override with event description
+    if (props.event && props.event.description && isJSON(props.event.description)) {
+        try {
+            const logData = JSON.parse(props.event.description);
+
+            if (isFinite(logData.startFuel) && logData.startFuel >= 0) {
+                logbookEntry.value.startFuel = logData.startFuel;
+            }
+            if (isFinite(logData.endFuel) && logData.endFuel >= 0) {
+                logbookEntry.value.endFuel = logData.endFuel;
+            }
+            if (isFinite(logData.startEngineHours) && logData.startEngineHours >= 0) {
+                logbookEntry.value.startEngineHours = logData.startEngineHours;
+            }
+            if (isFinite(logData.endEngineHours) && logData.endEngineHours >= 0) {
+                logbookEntry.value.endEngineHours = logData.endEngineHours;
+            }
+            if (typeof logData.addFuel === 'string') {
+                logbookEntry.value.addFuel = logData.addFuel;
+            }
+            if (typeof logData.comments === 'string') {
+                logbookEntry.value.comments = logData.comments;
+            }
+        } catch (error) {
+            console.error('Error parsing logbook entry from event description:', error);
+        }
+    }
 };
 
 const saveLogbook = async () => {
@@ -115,4 +162,6 @@ const saveLogbook = async () => {
         console.error('Error saving logbook entry', error);
     }
 };
+
+onMounted(loadLogbookEntry);
 </script>

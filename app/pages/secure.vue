@@ -3,8 +3,7 @@
     <UCard class="mt-10">
       <UAccordion :items="accordionItems" multiple size="lg">
         <template #item="{ item }">
-          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event"
-            @dayBooked="handleDayBooked" />
+          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event" @dayBooked="handleDayBooked" />
         </template>
       </UAccordion>
     </UCard>
@@ -35,6 +34,7 @@ interface CalendarDay {
   isUserBooking: boolean;
   email?: string;
   tooltipText: string;
+  event?: CalendarEvent; // Add event property to store event data
 }
 
 const loading = ref(true);
@@ -175,11 +175,7 @@ const createAccordionItems = () => {
         color = 'red';
       }
     } else {
-      if (isFutureDate) {
-        component = markRaw(AvailableCell);
-      } else {
-        component = markRaw(AvailableCell);
-      }
+      component = markRaw(AvailableCell);
       icon = 'i-heroicons-check-circle';
       iconClass = 'text-green-600';
       color = 'green';
@@ -189,6 +185,7 @@ const createAccordionItems = () => {
       label: formatDate(day.date),
       date: day.date,
       email: day.isBooked && !day.isUserBooking ? day.email : undefined,
+      event: day.event, // Pass the event object to the component
       component,
       icon,
       iconClass,
