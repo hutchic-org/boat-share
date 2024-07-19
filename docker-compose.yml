@@ -16,3 +16,11 @@ services:
       NUXI_DISABLE_VITE_HMR: true
     command: npm run dev
     container_name: nuxt_app
+
+  ngrok:
+    image: ngrok/ngrok
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http --domain=${NGROK_DOMAIN} nuxt:3000
+    ports:
+      - "4040:4040"
