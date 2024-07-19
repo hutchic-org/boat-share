@@ -14,8 +14,11 @@ WORKDIR /src
 COPY app/package.json app/package-lock.json ./
 RUN npm install
 
-# Copy project files
-COPY app/ .
+# Copy project files and set permissions
+COPY --chown=node:node app/ .
+
+# Change to non-root user
+USER node
 
 # Expose port 3000
 EXPOSE 3000
