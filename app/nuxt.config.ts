@@ -40,6 +40,11 @@ export default defineNuxtConfig({
       installPrompt: true
     }
   },
+  runtimeConfig: {
+    public: {
+      googleCalendarId: '7417fba20bb0d2c726dba1575d7d6421014047d0dbfe15875c8dd3588796f8c6@group.calendar.google.com'
+    }
+  },
   vite: {
     server: {
       hmr: {
