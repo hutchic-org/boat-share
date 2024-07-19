@@ -21,6 +21,6 @@ services:
     image: ngrok/ngrok
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    command: http --domain=boatapp.ngrok.dev nuxt:3000
+    command: http --domain=${NGROK_DOMAIN} nuxt:3000
     ports:
       - "4040:4040"
