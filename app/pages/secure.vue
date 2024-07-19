@@ -14,10 +14,11 @@
 import { ref, onMounted, shallowRef, markRaw } from 'vue';
 import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
-import { isBefore, isToday } from 'date-fns';
+import { isBefore, isToday, isFuture } from 'date-fns';
 import BookedByUserCell from '~/components/BookedByUserCell.vue';
 import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
 import AvailableCell from '~/components/AvailableCell.vue';
+import FutureBookingCell from '~/components/FutureBookingCell.vue';
 
 interface CalendarEvent {
   start: { date: string };
@@ -67,7 +68,6 @@ const listCalendarEvents = async () => {
 
     const data = await response.json();
     events.value = data.items;
-    debugger
     generateCalendarDays();
   } catch (error) {
     console.error('Error fetching calendar events', error);
@@ -120,15 +120,13 @@ const generateCalendarDays = () => {
     const startDate = new Date(event.start.date);
     const endDate = new Date(event.end.date);
 
-    // Adjust for single-day events that end on the same day they start
     if (startDate.getTime() === endDate.getTime()) {
       endDate.setDate(endDate.getDate() + 1);
     }
 
-    // Ensure the event spans the correct date range, adding one day
     for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
       const adjustedDate = new Date(d);
-      adjustedDate.setDate(adjustedDate.getDate() + 1); // Adding one day
+      adjustedDate.setDate(adjustedDate.getDate() + 1);
       const dayIndex = adjustedDate.getDate() - 1;
       if (calendarDays.value[dayIndex]) {
         calendarDays.value[dayIndex].isBooked = true;
@@ -142,38 +140,59 @@ const generateCalendarDays = () => {
   createAccordionItems();
 };
 
-
 const accordionItems = shallowRef([]);
 
 const createAccordionItems = () => {
-  accordionItems.value = calendarDays.value.map(day => ({
-    label: formatDate(day.date),
-    date: day.date,
-    email: day.isBooked && !day.isUserBooking ? day.email : undefined,
-    component: markRaw(day.isBooked
-      ? day.isUserBooking
-        ? BookedByUserCell
-        : BookedByOthersCell
-      : AvailableCell),
-    icon: day.isBooked
-      ? day.isUserBooking
-        ? 'i-heroicons-user-circle'
-        : 'i-heroicons-x-circle'
-      : 'i-heroicons-check-circle',
-    iconClass: day.isBooked
-      ? day.isUserBooking
-        ? 'text-blue-600'
-        : 'text-red-600'
-      : 'text-green-600',
-    color: day.isBooked
-      ? day.isUserBooking
-        ? 'blue'
-        : 'red'
-      : 'green',
-    variant: isPastDay(day.date) ? 'ghost' : 'solid',
-    disabled: isPastDay(day.date) && !day.isBooked,
-  }));
+  accordionItems.value = calendarDays.value.map(day => {
+    const dayDate = new Date(day.date + 'T00:00:00');
+    const isFutureDate = isFuture(dayDate);
+
+    let component;
+    let icon;
+    let iconClass;
+    let color;
+
+    if (day.isBooked) {
+      if (day.isUserBooking) {
+        if (isFutureDate) {
+          component = markRaw(FutureBookingCell);
+        } else {
+          component = markRaw(BookedByUserCell);
+        }
+        icon = 'i-heroicons-user-circle';
+        iconClass = 'text-blue-600';
+        color = 'blue';
+      } else {
+        component = markRaw(BookedByOthersCell);
+        icon = 'i-heroicons-x-circle';
+        iconClass = 'text-red-600';
+        color = 'red';
+      }
+    } else {
+      if (isFutureDate) {
+        component = markRaw(AvailableCell);
+      } else {
+        component = markRaw(AvailableCell);
+      }
+      icon = 'i-heroicons-check-circle';
+      iconClass = 'text-green-600';
+      color = 'green';
+    }
+
+    return {
+      label: formatDate(day.date),
+      date: day.date,
+      email: day.isBooked && !day.isUserBooking ? day.email : undefined,
+      component,
+      icon,
+      iconClass,
+      color,
+      variant: isPastDay(day.date) ? 'ghost' : 'solid',
+      disabled: isPastDay(day.date) && !day.isBooked,
+    };
+  });
 };
+
 
 const isPastDay = (date: string) => {
   const today = new Date().toISOString().split('T')[0];
