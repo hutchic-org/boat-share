@@ -34,9 +34,6 @@ clean:
 # Generate the static site
 package: clean build
 	UID=$$(id -u) GID=$$(id -g) docker compose up -d nuxt
-	sleep 5
-	docker compose ps
-	sleep 5
 	docker compose exec --user=root nuxt chown -R node:node /src
 	UID=$$(id -u) GID=$$(id -g) docker compose exec nuxt /bin/bash -c "NUXT_APP_BASE_URL=/boat-share/ npx nuxt build --preset github_pages"
 	$(MAKE) stop
