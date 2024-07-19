@@ -4,8 +4,8 @@ services:
     build:
       context: .
       args:
-        NODE_ENV: development
-    container_name: nuxt_app
+        USER_ID: ${UID}
+        GROUP_ID: ${GID}
     volumes:
       - ./app/:/src
       - /src/node_modules
@@ -15,10 +15,4 @@ services:
       NODE_ENV: development
       NUXI_DISABLE_VITE_HMR: true
     command: npm run dev
-  ngrok:
-    image: ngrok/ngrok
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    command: http --domain=boatapp.ngrok.dev nuxt:3000
-    ports:
-      - "4040:4040"
+    container_name: nuxt_app

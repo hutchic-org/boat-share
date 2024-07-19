@@ -32,6 +32,7 @@ clean:
 	rm -rf app/dist
 
 # Generate the static site
-package: clean
-	docker compose up -d nuxt
+package: clean build
+	UID=$$(id -u) GID=$$(id -g) docker compose up -d nuxt
 	docker compose exec nuxt npm run generate
+	$(MAKE) stop
