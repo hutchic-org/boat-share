@@ -7,7 +7,15 @@
       <div v-else>
         <UAccordion :items="accordionItems" multiple size="lg">
           <template #item="{ item }">
-            <div v-html="item.content"></div>
+            <div v-if="item.isBookedByUser">
+              <BookedByUserCell :date="item.date" />
+            </div>
+            <div v-else-if="item.isBookedByOthers">
+              <BookedByOthersCell :email="item.email" />
+            </div>
+            <div v-else>
+              <AvailableCell />
+            </div>
           </template>
         </UAccordion>
       </div>
@@ -20,6 +28,10 @@ import { ref, onMounted } from 'vue';
 import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
 import { format, isBefore, isToday } from 'date-fns';
+
+import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
+import BookedByUserCell from '~/components/BookedByUserCell.vue';
+import AvailableCell from '~/components/AvailableCell.vue';
 
 interface CalendarEvent {
   start: { date: string };
@@ -38,10 +50,13 @@ interface AccordionItem {
   label: string;
   icon: string;
   iconClass: string;
-  content: string;
   color: string;
   variant: string;
   disabled: boolean;
+  isBookedByUser: boolean;
+  isBookedByOthers: boolean;
+  email?: string;
+  date: string;
 }
 
 const loading = ref(true);
@@ -156,12 +171,13 @@ const createAccordionItems = () => {
       label: formatDate(day.date),
       icon: day.isBooked ? (day.isUserBooking ? 'i-heroicons-user-circle' : 'i-heroicons-x-circle') : 'i-heroicons-check-circle',
       iconClass: day.isBooked ? (day.isUserBooking ? 'text-blue-600' : 'text-red-600') : 'text-green-600',
-      content: day.isBooked
-        ? (day.isUserBooking ? `<p>Booked by you</p>` : `<p>Booked by: ${day.email}</p>`)
-        : `<p>Available</p>`,
       color,
       variant,
-      disabled
+      disabled,
+      isBookedByUser: day.isBooked && day.isUserBooking,
+      isBookedByOthers: day.isBooked && !day.isUserBooking,
+      email: day.email,
+      date: day.date
     };
   });
 };
