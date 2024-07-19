@@ -1,16 +1,18 @@
-.PHONY: build dev logs clean
+.PHONY: build dev logs clean package stop restart exec
 
 # Build the Docker images
 build:
-	docker compose build
+	UID=$$(id -u) GID=$$(id -g) docker compose build
 
 # Start the development environment
-dev:
-	docker compose up -d
+dev: build
+	UID=$$(id -u) GID=$$(id -g) docker compose up -d
 
+# Stop the development environment
 stop:
 	docker compose stop
 
+# Restart the development environment
 restart:
 	docker compose restart
 
@@ -27,3 +29,11 @@ clean:
 	docker compose down -v --rmi all --remove-orphans
 	rm -rf node_modules
 	rm -rf .nuxt
+	rm -rf app/dist
+
+# Generate the static site
+package: clean build
+	UID=$$(id -u) GID=$$(id -g) docker compose up -d nuxt
+	docker compose exec --user=root nuxt chown -R node:node /src
+	UID=$$(id -u) GID=$$(id -g) docker compose exec nuxt /bin/bash -c "NUXT_APP_BASE_URL=/boat-share/ npx nuxt build --preset github_pages"
+	$(MAKE) stop
