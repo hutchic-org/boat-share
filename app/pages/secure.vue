@@ -3,7 +3,7 @@
     <UCard class="mt-10">
       <UAccordion :items="accordionItems" multiple size="lg">
         <template #item="{ item }">
-          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event" :lastLogEntry="lastLogEntry" @dayBooked="handleDayBooked" />
+          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event" :lastLogEntry="lastLogEntry" @dayBooked="handleDayBooked" @bookingDeleted="handleBookingDeleted" />
         </template>
       </UAccordion>
     </UCard>
@@ -242,6 +242,17 @@ const handleDayBooked = (bookedDate: string) => {
     day.isBooked = true;
     day.isUserBooking = true;
     day.tooltipText = `Booked by: ${userEmail.value}`;
+    createAccordionItems();  // Ensure the accordion items are updated
+  }
+};
+
+const handleBookingDeleted = (deletedDate: string) => {
+  const day = calendarDays.value.find(day => day.date === deletedDate);
+  if (day) {
+    day.isBooked = false;
+    day.isUserBooking = false;
+    day.tooltipText = '';
+    day.event = undefined; // Clear the event object
     createAccordionItems();  // Ensure the accordion items are updated
   }
 };
