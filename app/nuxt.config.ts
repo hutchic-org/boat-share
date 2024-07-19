@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin"],
+  googleSignIn: {
+    clientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
+  },
   pwa: {
     manifest: {
       name: 'Boat Sharing App',
@@ -41,8 +44,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      googleCalendarId: '7417fba20bb0d2c726dba1575d7d6421014047d0dbfe15875c8dd3588796f8c6@group.calendar.google.com',
-      oauthClientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
+      googleCalendarId: '7417fba20bb0d2c726dba1575d7d6421014047d0dbfe15875c8dd3588796f8c6@group.calendar.google.com'
     }
   },
   vite: {

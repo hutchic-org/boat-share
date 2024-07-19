@@ -22,10 +22,8 @@ const handleOnError = (errorResponse: AuthCodeFlowErrorResponse) => {
     console.log('Error: ', errorResponse);
 };
 
-const config = useRuntimeConfig()
-
 const { login } = useTokenClient({
-    client_id: config.public.oauthClientId,
+    client_id: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
     scope: 'profile email https://www.googleapis.com/auth/calendar',
     prompt: 'consent',
     onSuccess: handleOnSuccess,
