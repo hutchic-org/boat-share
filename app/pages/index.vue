@@ -13,7 +13,6 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const handleOnSuccess = (response: AuthCodeFlowSuccessResponse) => {
-    console.log('Access Token: ', response.access_token);
     sessionStorage.setItem('googleAccessToken', response.access_token);
     router.push('/secure');
 };
