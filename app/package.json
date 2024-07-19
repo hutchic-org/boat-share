@@ -16,6 +16,7 @@
     "nuxt": "^3.12.3"
   },
   "dependencies": {
+    "date-fns": "^3.6.0",
     "nuxt-vue3-google-signin": "^0.0.11"
   }
 }

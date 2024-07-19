@@ -14,7 +14,7 @@
 import { ref, onMounted, shallowRef, markRaw } from 'vue';
 import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
-import { isBefore, isToday, isFuture } from 'date-fns';
+import { isFuture } from 'date-fns';
 import BookedByUserCell from '~/components/BookedByUserCell.vue';
 import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
 import AvailableCell from '~/components/AvailableCell.vue';
