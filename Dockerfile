@@ -14,7 +14,7 @@ WORKDIR /src
 
 # Install dependencies
 COPY app/package.json app/package-lock.json ./
-RUN npm install
+RUN npm install --production=false
 
 # Copy project files
 COPY app/ .
