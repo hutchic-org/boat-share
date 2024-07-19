@@ -11,7 +11,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      NODE_ENV: development
+      NUXI_DISABLE_VITE_HMR: true
     command: npm run dev
   ngrok:
     image: ngrok/ngrok
