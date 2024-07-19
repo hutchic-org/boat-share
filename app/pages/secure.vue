@@ -1,7 +1,7 @@
 <template>
     <UContainer>
       <UCard class="mt-10">
-        <h1>Boat Bookings</h1>
+        <h1>Boat Booking</h1>
         <p>Boat Availability Calendar:</p>
         <div v-if="loading">
           <p>Loading calendar events...</p>
@@ -11,10 +11,18 @@
             <div class="day" v-for="day in calendarDays" :key="day.date">
               <span :class="{ booked: day.isBooked }">{{ day.date }}</span>
               <template v-if="day.isBooked">
-                <UIcon v-if="day.isUserBooking" name="i-heroicons-user-circle" dynamic class="icon-user-booked" />
-                <UIcon v-else name="i-heroicons-x-circle" dynamic class="icon-booked" />
+                <UTooltip :text="day.tooltipText" :popper="{ placement: 'top', arrow: true }">
+                  <template v-if="day.isUserBooking">
+                    <UIcon name="i-heroicons-user-circle" dynamic class="icon-user-booked" />
+                  </template>
+                  <template v-else>
+                    <UIcon name="i-heroicons-x-circle" dynamic class="icon-booked" />
+                  </template>
+                </UTooltip>
               </template>
-              <UIcon v-else name="i-heroicons-check-circle" dynamic class="icon-available" />
+              <template v-else>
+                <UIcon name="i-heroicons-check-circle" dynamic class="icon-available" />
+              </template>
             </div>
           </div>
         </div>
@@ -93,9 +101,20 @@
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     calendarDays.value = Array.from({ length: daysInMonth }, (_, i) => {
       const date = new Date(today.getFullYear(), today.getMonth(), i + 1).toISOString().split('T')[0];
-      const isBooked = events.value.some(event => event.start.date === date);
-      const isUserBooking = events.value.some(event => event.start.date === date && event.creator.email === userEmail.value);
-      return { date: i + 1, isBooked, isUserBooking };
+      return { date: i + 1, isBooked: false, isUserBooking: false, tooltipText: '' };
+    });
+
+    events.value.forEach(event => {
+      const startDate = new Date(event.start.date);
+      const endDate = new Date(event.end.date);
+      for (let d = startDate; d < endDate; d.setDate(d.getDate() + 1)) {
+        const dayIndex = d.getDate() - 1;
+        if (calendarDays.value[dayIndex]) {
+          calendarDays.value[dayIndex].isBooked = true;
+          calendarDays.value[dayIndex].isUserBooking = event.creator.email === userEmail.value;
+          calendarDays.value[dayIndex].tooltipText = `Booked by: ${event.creator.email}`;
+        }
+      }
     });
   };
 
@@ -124,5 +143,8 @@
   }
   .icon-available {
     color: green;
+  }
+  .booked {
+    font-weight: bold;
   }
   </style>
