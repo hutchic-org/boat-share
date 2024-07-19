@@ -39,6 +39,9 @@ export default defineNuxtConfig({
       installPrompt: true
     }
   },
+  googleSignIn: {
+    clientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
+  },
   runtimeConfig: {
     public: {
       googleCalendarId: '7417fba20bb0d2c726dba1575d7d6421014047d0dbfe15875c8dd3588796f8c6@group.calendar.google.com',

@@ -1,6 +1,18 @@
 export default defineAppConfig({
   ui: {
-    primary: 'lime',
-    gray: 'neutral',
+    primary: 'green',
+    gray: 'cool',
+    button: {
+      default: {
+        color: 'green',
+        variant: 'solid'
+      }
+    },
+    accordion: {
+      default: {
+        color: 'gray',
+        variant: 'soft'
+      }
+    }
   }
 })
