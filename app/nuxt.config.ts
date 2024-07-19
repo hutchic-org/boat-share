@@ -2,7 +2,6 @@
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  extends: ['@nuxt/ui-pro'],
   modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin"],
   pwa: {
     manifest: {

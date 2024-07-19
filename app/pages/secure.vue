@@ -67,6 +67,7 @@ const listCalendarEvents = async () => {
 
     const data = await response.json();
     events.value = data.items;
+    debugger
     generateCalendarDays();
   } catch (error) {
     console.error('Error fetching calendar events', error);
@@ -118,8 +119,14 @@ const generateCalendarDays = () => {
   events.value.forEach(event => {
     const startDate = new Date(event.start.date);
     const endDate = new Date(event.end.date);
+
+    // Adjust for single-day events that end on the same day they start
+    if (startDate.getTime() === endDate.getTime()) {
+      endDate.setDate(endDate.getDate() + 1);
+    }
+
     // Ensure the event spans the correct date range, adding one day
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
       const adjustedDate = new Date(d);
       adjustedDate.setDate(adjustedDate.getDate() + 1); // Adding one day
       const dayIndex = adjustedDate.getDate() - 1;
@@ -134,6 +141,7 @@ const generateCalendarDays = () => {
 
   createAccordionItems();
 };
+
 
 const accordionItems = shallowRef([]);
 
@@ -152,7 +160,17 @@ const createAccordionItems = () => {
         ? 'i-heroicons-user-circle'
         : 'i-heroicons-x-circle'
       : 'i-heroicons-check-circle',
-    variant: isPastDay(day.date) ? 'ghost' : undefined,
+    iconClass: day.isBooked
+      ? day.isUserBooking
+        ? 'text-blue-600'
+        : 'text-red-600'
+      : 'text-green-600',
+    color: day.isBooked
+      ? day.isUserBooking
+        ? 'blue'
+        : 'red'
+      : 'green',
+    variant: isPastDay(day.date) ? 'ghost' : 'solid',
     disabled: isPastDay(day.date) && !day.isBooked,
   }));
 };
@@ -182,3 +200,7 @@ onMounted(async () => {
   await listCalendarEvents();
 });
 </script>
+
+<style scoped>
+/* Add any necessary styles here */
+</style>
