@@ -13,26 +13,30 @@ export default defineNuxtConfig({
       description: 'An app for sharing a boat among a pre-defined set of users.',
       lang: 'en',
       display: 'standalone',
-      start_url: '/',
+      scope: '/boat-share/',
+      start_url: '/boat-share/',
       background_color: '#ffffff',
       theme_color: '#4DBA87',
-      // icons: [
-      //   {
-      //     src: 'icons/50.png',
-      //     sizes: '50x50',
-      //     type: 'image/png'
-      //   },
-      //   {
-      //     src: 'icons/192.png',
-      //     sizes: '192x192',
-      //     type: 'image/png'
-      //   },
-      //   {
-      //     src: 'icons/512.png',
-      //     sizes: '512x512',
-      //     type: 'image/png'
-      //   },
-      // ]
+      icons: [
+        {
+          src: '/icons/50.png',
+          sizes: '50x50',
+          type: 'image/png'
+        },
+        {
+          src: '/icons/192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: '/icons/512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        },
+      ]
+    },
+    workbox: {
+      navigateFallback: '/'
     },
     client: {
       installPrompt: true
