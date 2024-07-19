@@ -53,14 +53,14 @@ interface LogBookEntry {
     comments: string;
 }
 
-const props = defineProps<{ date: string, event: any }>();
+const props = defineProps<{ date: string, event: any, lastLogEntry: LogBookEntry | null }>();
 const emit = defineEmits(['logbookSaved']);
 
 const logbookEntry = ref<LogBookEntry>({
     date: props.date,
-    startFuel: 0,
+    startFuel: props.lastLogEntry ? props.lastLogEntry.endFuel : 0,
     endFuel: 0,
-    startEngineHours: 0,
+    startEngineHours: props.lastLogEntry ? props.lastLogEntry.endEngineHours : 0,
     endEngineHours: 0,
     addFuel: '',
     comments: '',
@@ -87,9 +87,9 @@ const isJSON = (str) => {
 
 const loadLogbookEntry = () => {
     // Initialize default values
-    logbookEntry.value.startFuel = 0;
+    logbookEntry.value.startFuel = props.lastLogEntry ? props.lastLogEntry.endFuel : 0;
+    logbookEntry.value.startEngineHours = props.lastLogEntry ? props.lastLogEntry.endEngineHours : 0;
     logbookEntry.value.endFuel = 0;
-    logbookEntry.value.startEngineHours = 0;
     logbookEntry.value.endEngineHours = 0;
     logbookEntry.value.addFuel = '';
     logbookEntry.value.comments = '';

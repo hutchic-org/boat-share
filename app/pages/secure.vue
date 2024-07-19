@@ -3,7 +3,7 @@
     <UCard class="mt-10">
       <UAccordion :items="accordionItems" multiple size="lg">
         <template #item="{ item }">
-          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event" @dayBooked="handleDayBooked" />
+          <component :is="item.component" :date="item.date" :email="item.email" :event="item.event" :lastLogEntry="lastLogEntry" @dayBooked="handleDayBooked" />
         </template>
       </UAccordion>
     </UCard>
@@ -37,10 +37,21 @@ interface CalendarDay {
   event?: CalendarEvent; // Add event property to store event data
 }
 
+interface LogBookEntry {
+  date: string;
+  startFuel: number;
+  endFuel: number;
+  startEngineHours: number;
+  endEngineHours: number;
+  addFuel: string;
+  comments: string;
+}
+
 const loading = ref(true);
 const events = ref<CalendarEvent[]>([]);
 const calendarDays = ref<CalendarDay[]>([]);
 const userEmail = ref<string>('');
+const lastLogEntry = ref<LogBookEntry | null>(null); // Store the last log entry
 const router = useRouter();
 const config = useRuntimeConfig();
 
@@ -139,6 +150,24 @@ const generateCalendarDays = () => {
         calendarDays.value[dayIndex].email = event.creator.email;
         calendarDays.value[dayIndex].tooltipText = `Booked by: ${event.creator.email}`;
         calendarDays.value[dayIndex].event = event; // Store the event object
+
+        // Update the last log entry with the current event's end fuel and engine hours
+        if (isJSON(event.description)) {
+          try {
+            const logData = JSON.parse(event.description);
+            lastLogEntry.value = {
+              date: event.start.date,
+              startFuel: logData.endFuel || 0,
+              endFuel: logData.endFuel || 0,
+              startEngineHours: logData.endEngineHours || 0,
+              endEngineHours: logData.endEngineHours || 0,
+              addFuel: '',
+              comments: ''
+            };
+          } catch (error) {
+            console.error('Error parsing last logbook entry:', error);
+          }
+        }
       }
     }
   });
@@ -186,6 +215,7 @@ const createAccordionItems = () => {
       date: day.date,
       email: day.isBooked && !day.isUserBooking ? day.email : undefined,
       event: day.event, // Pass the event object to the component
+      lastLogEntry: lastLogEntry.value, // Pass the last log entry to the component
       component,
       icon,
       iconClass,
@@ -213,6 +243,15 @@ const handleDayBooked = (bookedDate: string) => {
     day.isUserBooking = true;
     day.tooltipText = `Booked by: ${userEmail.value}`;
     createAccordionItems();  // Ensure the accordion items are updated
+  }
+};
+
+const isJSON = (str) => {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (error) {
+    return false;
   }
 };
 
