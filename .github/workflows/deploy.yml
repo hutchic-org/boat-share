@@ -6,13 +6,8 @@ on:
       - feat/github-pages
 
 jobs:
-  build-and-deploy:
+  package:
     runs-on: ubuntu-latest
-
-    permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,13 +19,18 @@ jobs:
         run: |
           make package
 
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
         with:
-          path: ./app/.output/public  # The path to the generated static site
+          static_site_generator: nuxt
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./app/.output/public
 
   deploy:
-    needs: build-and-deploy
+    needs: package
     runs-on: ubuntu-latest
     permissions:
       pages: write      # to deploy to Pages
@@ -44,5 +44,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
