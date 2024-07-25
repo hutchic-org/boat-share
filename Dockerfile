@@ -1,5 +1,5 @@
 # Use Node.js 22 image
-FROM node:22-bullseye@sha256:989f465b77e9ca45debacfaebc4299b2be99d347c51c2ed907c6284b86f893b5
+FROM node:22-bullseye@sha256:549b964736c2d5c02112fd369037e981f8b935083d6fdf1a924b831930946b6c
 
 # Set build-time arguments
 ARG USER_ID
