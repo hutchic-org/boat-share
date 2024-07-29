@@ -35,20 +35,20 @@ export default defineNuxtConfig({
         },
       ]
     },
-    // workbox: {
-    //   navigateFallback: 'https://hutchic-org.github.io/boat-share/',
-    //   runtimeCaching: [
-    //     {
-    //       urlPattern: 'https://hutchic-org.github.io/boat-share/.*',
-    //       handler: 'NetworkFirst',
-    //       options: {
-    //         cacheableResponse: {
-    //           statuses: [0, 200]
-    //         }
-    //       }
-    //     }
-    //   ]
-    // },
+    workbox: {
+      navigateFallback: undefined,
+      runtimeCaching: [
+        {
+          urlPattern: 'https://hutchic-org.github.io/boat-share/.*',
+          handler: 'NetworkFirst',
+          options: {
+            cacheableResponse: {
+              statuses: [0, 200]
+            }
+          }
+        }
+      ]
+    },
     devOptions: {
       enabled: true
     },
