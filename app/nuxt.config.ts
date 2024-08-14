@@ -1,10 +1,12 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
   modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin"],
   googleSignIn: {
     clientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
+  },
+  app: {
+    baseURL: '/boat-share/' // Set the base URL for GitHub Pages
   },
   pwa: {
     manifest: {
@@ -72,4 +74,4 @@ export default defineNuxtConfig({
     }
   },
   compatibilityDate: '2024-07-03',
-})
+});
