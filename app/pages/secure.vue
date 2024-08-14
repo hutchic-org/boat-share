@@ -14,7 +14,7 @@
 import { ref, onMounted, shallowRef, markRaw } from 'vue';
 import { useRuntimeConfig } from '#app';
 import { useRouter } from 'vue-router';
-import { isFuture } from 'date-fns';
+import { isFuture, addMonths, startOfMonth, endOfMonth, format } from 'date-fns';
 import BookedByUserCell from '~/components/BookedByUserCell.vue';
 import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
 import AvailableCell from '~/components/AvailableCell.vue';
@@ -63,12 +63,22 @@ const listCalendarEvents = async () => {
     return;
   }
 
+  const today = new Date();
+  const startOfPrevMonth = startOfMonth(addMonths(today, -1));
+  const endOfNextMonth = endOfMonth(addMonths(today, 1));
+
+  const timeMin = format(startOfPrevMonth, "yyyy-MM-dd'T'00:00:00'Z'");
+  const timeMax = format(endOfNextMonth, "yyyy-MM-dd'T'23:59:59'Z'");
+
   try {
-    const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${config.public.googleCalendarId}/events`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${config.public.googleCalendarId}/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
-    });
+    );
 
     if (response.status === 401) {
       sessionStorage.removeItem('googleAccessToken');
