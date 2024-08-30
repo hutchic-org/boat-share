@@ -11,13 +11,13 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
-    "@nuxt/ui": "^2.17.0",
-    "@nuxtjs/tailwindcss": "^6.12.1",
     "@vite-pwa/nuxt": "^0.9.1",
     "nuxt": "^3.12.4"
   },
   "dependencies": {
     "date-fns": "^3.6.0",
-    "nuxt-vue3-google-signin": "^0.0.11"
+    "nuxt-vue3-google-signin": "^0.0.11",
+    "@nuxt/ui": "^2.17.0",
+    "@nuxtjs/tailwindcss": "^6.12.1"
   }
 }
