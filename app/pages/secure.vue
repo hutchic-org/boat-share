@@ -11,9 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, shallowRef, markRaw } from 'vue';
-import { useRuntimeConfig } from '#app';
-import { useRouter } from 'vue-router';
 import { isFuture, addMonths, startOfMonth, endOfMonth, format } from 'date-fns';
 import BookedByUserCell from '~/components/BookedByUserCell.vue';
 import BookedByOthersCell from '~/components/BookedByOthersCell.vue';
@@ -133,51 +130,32 @@ const fetchUserProfile = async () => {
 };
 
 const generateCalendarDays = () => {
-  const today = new Date();
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-  calendarDays.value = Array.from({ length: daysInMonth }, (_, i) => {
-    const date = new Date(today.getFullYear(), today.getMonth(), i + 1).toISOString().split('T')[0];
-    return { date, isBooked: false, isUserBooking: false, tooltipText: '' };
-  });
+  const startOfPrevMonth = startOfMonth(addMonths(new Date(), -1));
+  const endOfNextMonth = endOfMonth(addMonths(new Date(), 1));
+  
+  calendarDays.value = [];
+  
+  for (let d = new Date(startOfPrevMonth); d <= endOfNextMonth; d.setDate(d.getDate() + 1)) {
+    const date = new Date(d).toISOString().split('T')[0];
+    calendarDays.value.push({ date, isBooked: false, isUserBooking: false, tooltipText: '' });
+  }
 
-  events.value.forEach(event => {
+  events.value.forEach((event: { start: { date: string | number | Date; }; end: { date: string | number | Date; }; creator: { email: any; }; }) => {
     const startDate = new Date(event.start.date);
     const endDate = new Date(event.end.date);
-
-    // Adjust for single-day events that end on the same day they start
     if (startDate.getTime() === endDate.getTime()) {
       endDate.setDate(endDate.getDate() + 1);
     }
 
-    // Ensure the event spans the correct date range, adding one day
     for (let d = new Date(startDate); d < endDate; d.setDate(d.getDate() + 1)) {
-      const adjustedDate = new Date(d);
-      adjustedDate.setDate(adjustedDate.getDate() + 1); // Adding one day
-      const dayIndex = adjustedDate.getDate() - 1;
-      if (calendarDays.value[dayIndex]) {
-        calendarDays.value[dayIndex].isBooked = true;
-        calendarDays.value[dayIndex].isUserBooking = event.creator.email === userEmail.value;
-        calendarDays.value[dayIndex].email = event.creator.email;
-        calendarDays.value[dayIndex].tooltipText = `Booked by: ${event.creator.email}`;
-        calendarDays.value[dayIndex].event = event; // Store the event object
-
-        // Update the last log entry with the current event's end fuel and engine hours
-        if (isJSON(event.description)) {
-          try {
-            const logData = JSON.parse(event.description);
-            lastLogEntry.value = {
-              date: event.start.date,
-              startFuel: logData.endFuel || 0,
-              endFuel: logData.endFuel || 0,
-              startEngineHours: logData.endEngineHours || 0,
-              endEngineHours: logData.endEngineHours || 0,
-              addFuel: '',
-              comments: ''
-            };
-          } catch (error) {
-            console.error('Error parsing last logbook entry:', error);
-          }
-        }
+      const adjustedDate = new Date(d).toISOString().split('T')[0];
+      const day = calendarDays.value.find((day: { date: string; }) => day.date === adjustedDate);
+      if (day) {
+        day.isBooked = true;
+        day.isUserBooking = event.creator.email === userEmail.value;
+        day.email = event.creator.email;
+        day.tooltipText = `Booked by: ${event.creator.email}`;
+        day.event = event;
       }
     }
   });
@@ -188,7 +166,7 @@ const generateCalendarDays = () => {
 const accordionItems = shallowRef([]);
 
 const createAccordionItems = () => {
-  accordionItems.value = calendarDays.value.map(day => {
+  accordionItems.value = calendarDays.value.map((day: { date: string; isBooked: any; isUserBooking: any; email: any; event: any; }) => {
     const dayDate = new Date(day.date + 'T00:00:00');
     const isFutureDate = isFuture(dayDate);
 
@@ -247,7 +225,7 @@ const formatDate = (dateString: string) => {
 };
 
 const handleDayBooked = (bookedDate: string) => {
-  const day = calendarDays.value.find(day => day.date === bookedDate);
+  const day = calendarDays.value.find((day: { date: string; }) => day.date === bookedDate);
   if (day) {
     day.isBooked = true;
     day.isUserBooking = true;
@@ -257,7 +235,7 @@ const handleDayBooked = (bookedDate: string) => {
 };
 
 const handleBookingDeleted = (deletedDate: string) => {
-  const day = calendarDays.value.find(day => day.date === deletedDate);
+  const day = calendarDays.value.find((day: { date: string; }) => day.date === deletedDate);
   if (day) {
     day.isBooked = false;
     day.isUserBooking = false;
@@ -267,7 +245,7 @@ const handleBookingDeleted = (deletedDate: string) => {
   }
 };
 
-const isJSON = (str) => {
+const isJSON = (str: string) => {
   try {
     JSON.parse(str);
     return true;

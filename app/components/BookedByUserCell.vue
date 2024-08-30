@@ -18,16 +18,20 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label :for="`start-engine-hours-${date}`" class="block mb-2">Starting Engine Hours:</label>
-                        <UInput type="number" :id="`start-engine-hours-${date}`" v-model="logbookEntry.startEngineHours" :min="0" />
+                        <UInput type="number" :id="`start-engine-hours-${date}`" v-model.number="logbookEntry.startEngineHours" :min="0" step="0.1" />
                     </div>
                     <div>
                         <label :for="`end-engine-hours-${date}`" class="block mb-2">Ending Engine Hours:</label>
-                        <UInput type="number" :id="`end-engine-hours-${date}`" v-model="logbookEntry.endEngineHours" :min="0" />
+                        <UInput type="number" :id="`end-engine-hours-${date}`" v-model.number="logbookEntry.endEngineHours" :min="0" step="0.1" />
                     </div>
                 </div>
             </UFormGroup>
             <UFormGroup class="mb-4">
                 <URadioGroup v-model="logbookEntry.addFuel" :options="fuelOptions" legend="Did you add fuel?" />
+            </UFormGroup>
+            <UFormGroup v-if="logbookEntry.addFuel === 'yes'" class="mb-4">
+                <label :for="`fuel-amount-${date}`" class="block mb-2">Total Money Spent on Fuel:</label>
+                <UInput type="number" :id="`fuel-amount-${date}`" v-model.number="logbookEntry.fuelAmount" :min="0" step="0.01" placeholder="Enter amount in dollars" />
             </UFormGroup>
             <UFormGroup class="mb-4">
                 <label :for="`comments-${date}`" class="block mb-2">Comments:</label>
@@ -39,7 +43,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import { format } from 'date-fns';
 import FuelSlider from './FuelSlider.vue'; // Importing the custom FuelSlider component
 
@@ -50,6 +53,7 @@ interface LogBookEntry {
     startEngineHours: number;
     endEngineHours: number;
     addFuel: string;
+    fuelAmount?: number;  // Add fuelAmount property
     comments: string;
 }
 
@@ -63,6 +67,7 @@ const logbookEntry = ref<LogBookEntry>({
     startEngineHours: props.lastLogEntry ? props.lastLogEntry.endEngineHours : 0,
     endEngineHours: 0,
     addFuel: '',
+    fuelAmount: undefined,  // Initialize fuelAmount
     comments: '',
 });
 
@@ -76,7 +81,7 @@ const formatDate = (dateString: string) => {
     return format(date, 'PPP');
 };
 
-const isJSON = (str) => {
+const isJSON = (str: string) => {
     try {
         JSON.parse(str);
         return true;
@@ -92,6 +97,7 @@ const loadLogbookEntry = () => {
     logbookEntry.value.endFuel = 0;
     logbookEntry.value.endEngineHours = 0;
     logbookEntry.value.addFuel = '';
+    logbookEntry.value.fuelAmount = undefined;  // Initialize fuelAmount
     logbookEntry.value.comments = '';
 
     // Attempt to parse and override with event description
@@ -114,6 +120,9 @@ const loadLogbookEntry = () => {
             if (typeof logData.addFuel === 'string') {
                 logbookEntry.value.addFuel = logData.addFuel;
             }
+            if (logData.fuelAmount !== undefined) {
+                logbookEntry.value.fuelAmount = logData.fuelAmount;  // Set fuelAmount value
+            }
             if (typeof logData.comments === 'string') {
                 logbookEntry.value.comments = logData.comments;
             }
@@ -130,6 +139,7 @@ const saveLogbook = async () => {
         startEngineHours: logbookEntry.value.startEngineHours,
         endEngineHours: logbookEntry.value.endEngineHours,
         addFuel: logbookEntry.value.addFuel,
+        fuelAmount: logbookEntry.value.fuelAmount,  // Include fuelAmount in saved data
         comments: logbookEntry.value.comments,
     };
 
