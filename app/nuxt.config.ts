@@ -1,20 +1,15 @@
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin"],
+  modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin", '@nuxtjs/tailwindcss'],
   googleSignIn: {
     clientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
   },
   app: {
-    baseURL: '/boat-share/' // Set the base URL for GitHub Pages
+    baseURL: '/boat-share/',
   },
-  head: {
-    link: [
-      {
-        rel: 'stylesheet',
-        href: 'https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css',
-      },
-    ],
+  router: {
+    base: '/boat-share/',
   },
   pwa: {
     manifest: {
