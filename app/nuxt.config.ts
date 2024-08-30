@@ -8,6 +8,14 @@ export default defineNuxtConfig({
   app: {
     baseURL: '/boat-share/' // Set the base URL for GitHub Pages
   },
+  head: {
+    link: [
+      {
+        rel: 'stylesheet',
+        href: 'https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css',
+      },
+    ],
+  },
   pwa: {
     manifest: {
       name: 'Boat Sharing App',
