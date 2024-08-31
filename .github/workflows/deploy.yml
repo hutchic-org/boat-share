@@ -52,7 +52,6 @@ jobs:
         run: |
           make package
           mkdir -p release
-          tar -czvf release/app-output-public.tar.gz -C app/.output/public .
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -67,10 +66,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Attach Release Artifact
-        if: ${{ needs.release.outputs.published == 'true' }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.release.outputs.release-git-tag }}
-          files: release/app-output-public.tar.gz
