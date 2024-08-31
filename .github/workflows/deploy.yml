@@ -1,15 +1,42 @@
-name: Deploy to GitHub Pages
+name: Build, Deploy to GitHub Pages, and Release
 
 on:
   push:
     branches:
       - main
 
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  package:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.release.outputs.published }}
+      release-git-tag: ${{ steps.release.outputs.release-git-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Semantic Release
+        id: release
+        uses: ahmadnassri/action-semantic-release@v2.2.8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  build-deploy:
+    name: Build, Package, and Deploy
+    needs: release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Docker
@@ -18,29 +45,26 @@ jobs:
       - name: Build and Package
         run: |
           make package
+          mkdir -p release
+          tar -czvf release/app-output-public.tar.gz -C app/.output/public .
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           static_site_generator: nuxt
 
-      - name: Upload artifact
+      - name: Upload artifact to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./app/.output/public
 
-  deploy:
-    needs: package
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Attach Release Artifact
+        if: ${{ needs.release.outputs.published == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release.outputs.release-git-tag }}
+          files: release/app-output-public.tar.gz
