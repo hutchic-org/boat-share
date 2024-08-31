@@ -8,7 +8,11 @@ export default <Partial<Config>> {
     './plugins/**/*.{js,ts}',
     './nuxt.config.{js,ts}',
     './app.vue',
-    './node_modules/@nuxt/ui/dist/**/*.css',
+    './src/node_modules/@nuxt/ui/dist/**/*.css',  // Include Nuxt UI styles
+    './src/node_modules/tailwindcss/**/*.css',    // Include Tailwind CSS files from node_modules
+    './src/node_modules/@tailwindcss/**/*.css',   // Include any Tailwind CSS plugins
+    './src/node_modules/headlessui/**/*.js',      // Include Headless UI if used
+    './src/node_modules/@headlessui/**/*.js',     // Include Headless UI for Tailwind CSS plugins
   ],
   theme: {
     extend: {
