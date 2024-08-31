@@ -33,5 +33,7 @@ clean:
 
 # Generate the static site
 package: clean dev
+	docker compose exec --user=root nuxt chown -R node:node /src
 	UID=$$(id -u) GID=$$(id -g) docker compose exec nuxt /bin/bash -c "npx nuxt generate --preset github_pages"
 	cd app/.output/public && ln -s . boat-share || true
+	$(MAKE) stop
