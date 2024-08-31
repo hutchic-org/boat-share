@@ -1,7 +1,15 @@
 export default defineNuxtConfig({
   ssr: false,
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@vite-pwa/nuxt", "nuxt-vue3-google-signin", '@nuxtjs/tailwindcss'],
+  modules: [
+    "@nuxt/ui",
+    "@vite-pwa/nuxt",
+    "nuxt-vue3-google-signin",
+    "@nuxtjs/tailwindcss"
+  ],
+  ui: {
+    global: true,
+  },
   googleSignIn: {
     clientId: '753759858538-nufcl1qbhf9gpc7v9qs4seramd7ni2rm.apps.googleusercontent.com',
   },

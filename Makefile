@@ -32,11 +32,6 @@ clean:
 	rm -rf app/dist
 
 # Generate the static site
-package: clean build
-	UID=$$(id -u) GID=$$(id -g) docker compose up -d nuxt
-	docker compose exec --user=root nuxt chown -R node:node /src
-	UID=$$(id -u) GID=$$(id -g) docker compose exec nuxt /bin/bash -c "NUXT_APP_BASE_URL=/boat-share/ \
-		NODE_ENV=production \
-		npx nuxt generate --force-dev --preset github_pages"
+package: clean dev
+	UID=$$(id -u) GID=$$(id -g) docker compose exec nuxt /bin/bash -c "npx nuxt generate --preset github_pages"
 	cd app/.output/public && ln -s . boat-share || true
-	$(MAKE) stop
