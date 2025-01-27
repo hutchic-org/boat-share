@@ -12,7 +12,7 @@
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@vite-pwa/nuxt": "^0.9.1",
-    "nuxt": "^3.12.4"
+    "nuxt": "^3.15.3"
   },
   "dependencies": {
     "date-fns": "^3.6.0",
